@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 from collections import defaultdict
 from pathlib import Path
 import datetime as dt
+import csv 
 
 # === CONFIG ===
 NUM_DAYS = 500
@@ -214,19 +215,56 @@ def main():
             independent_inserted += 1
         used_noise_days.add(day)
 
-    # === Step 5: Save alerts by day
-    for day, alerts in alerts_by_day.items():
-        filename = os.path.join(OUTPUT_DIR, f"alerts_day_{day + 1:04d}.json")
-        with open(filename, "w") as f:
-            json.dump(alerts, f, indent=2)
+    # === Step 5 & 6: Save all alerts and all type1 noise into single CSV files ===
 
-    # === Step 6: Save Type 1 noise by day & pattern
+    all_alerts_rows = []
+    type1_noise_rows = []
+
+    # Collect all data alerts
+    for day, alerts in alerts_by_day.items():
+        for alert in alerts:
+            all_alerts_rows.append([
+                alert["labels"]["job"],
+                alert["labels"]["instance"],
+                alert["labels"]["severity"],
+                alert["startsAt"],
+                alert["endsAt"],
+                alert["status"],
+                alert["annotations"]["description"],
+                alert["annotations"]["summary"]
+            ])
+
+    # Collect all type1 noise alerts
     for day_key, patterns in type1_noise_by_day_pattern.items():
-        day_dir = Path(TYPE1_NOISE_DIR) / day_key
-        day_dir.mkdir(parents=True, exist_ok=True)
         for pattern_key, alerts in patterns.items():
-            with open(day_dir / f"{pattern_key}.json", "w") as f:
-                json.dump(alerts, f, indent=2)
+            for alert in alerts:
+                type1_noise_rows.append([
+                    alert["labels"]["job"],
+                    alert["labels"]["instance"],
+                    alert["labels"]["severity"],
+                    alert["startsAt"],
+                    alert["endsAt"],
+                    alert["status"],
+                    alert["annotations"]["description"],
+                    alert["annotations"]["summary"]
+                ])
+
+    # Write all alerts into one CSV
+    all_alerts_filename = os.path.join(OUTPUT_DIR, "all_alerts.csv")
+    with open(all_alerts_filename, "w", newline='') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow(["job", "instance", "severity", "startsAt", "endsAt", "status", "description", "summary"])
+        writer.writerows(all_alerts_rows)
+
+    # Write all type1 noise into one CSV
+    type1_noise_filename = os.path.join(TYPE1_NOISE_DIR, "all_type1_noise.csv")
+    os.makedirs(TYPE1_NOISE_DIR, exist_ok=True)
+    with open(type1_noise_filename, "w", newline='') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow(["job", "instance", "severity", "startsAt", "endsAt", "status", "description", "summary"])
+        writer.writerows(type1_noise_rows)
+
+
 
     # === Summary
     print(f"Generated {NUM_DAYS} days.")
