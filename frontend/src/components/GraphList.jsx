@@ -45,6 +45,32 @@ const GraphList = ({ graphs, onGraphSelect, selectedGraphId }) => {
         }
     };
 
+    const handleDeleteGraph = async (graphId, e) => {
+        e.stopPropagation(); // Prevent triggering onGraphSelect
+        try {
+            const response = await fetch(`http://localhost:8080/batch?group_id=${encodeURIComponent(graphId)}`, {
+                method: 'DELETE',
+            });
+            if (response.ok) {
+                // Remove the graph from the list
+                if (typeof window !== 'undefined' && window.toast) {
+                    window.toast.success('Batch deleted successfully');
+                }
+                if (typeof window !== 'undefined' && window.dispatchEvent) {
+                    window.dispatchEvent(new CustomEvent('batchDeleted', { detail: { graphId } }));
+                }
+            } else {
+                if (typeof window !== 'undefined' && window.toast) {
+                    window.toast.error('Failed to delete batch');
+                }
+            }
+        } catch (err) {
+            if (typeof window !== 'undefined' && window.toast) {
+                window.toast.error('Error deleting batch');
+            }
+        }
+    };
+
     return (
         <div className="graph-list">
             <div className="graph-list-header">
@@ -110,6 +136,13 @@ const GraphList = ({ graphs, onGraphSelect, selectedGraphId }) => {
 
                                 <div className="graph-card-footer">
                                     <button className="view-btn">View Graph</button>
+                                    <button
+                                        className="delete-btn"
+                                        onClick={(e) => handleDeleteGraph(graphId, e)}
+                                        style={{ marginLeft: '0.5rem', background: '#dc2626', color: 'white', border: 'none', borderRadius: '6px', padding: '0.375rem 0.75rem', fontSize: '0.7rem', cursor: 'pointer' }}
+                                    >
+                                        Delete
+                                    </button>
                                 </div>
                             </div>
                         );

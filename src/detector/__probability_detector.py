@@ -279,7 +279,7 @@ class AlertBatch:
             await asyncio.sleep(cfg.delay)
             log.info(f"Notifying root={root.id} for {len(group.group)} alerts")
             await self.notifier.notify(group)
-            # self.groups.remove(group)
+            self.groups.remove(group)
             if len(self.groups) == 0:
                 self.deleter(self)
         except asyncio.CancelledError:

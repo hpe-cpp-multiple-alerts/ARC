@@ -16,7 +16,6 @@ class WsNotifier(BaseNotifier):
 
     async def notify(self, alertg: AlertGroup):
         try:
-            print("came")
             logger.info(
                 f"Seding data about alert group to all the websockets. {str(alertg)}"
             )
@@ -31,11 +30,11 @@ class WsNotifier(BaseNotifier):
         self.wsockets.remove(soc)
 
     async def add_wsocket(self, soc: web.WebSocketResponse):
-        logger.debug(
+        logger.info(
             "Seding data about all alert groups to all the new websocket coneection.",
         )
         self.wsockets.add(soc)
-        for g in self.groups:
+        for g in self.groups.values():
             await soc.send_str(str(g))
 
     async def free_wsockets(self):
@@ -46,4 +45,5 @@ class WsNotifier(BaseNotifier):
             await ws.close()
 
     async def delete_group(self, gid):
+        logger.info(f"Deleting group with {gid=}")
         del self.groups[gid]

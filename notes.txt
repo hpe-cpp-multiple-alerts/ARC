@@ -1,8 +1,8 @@
 1. todos for production:
     - cancellation (ctrl + c) - done
-    - deleting a graph if resolved - done(backend)
+    - deleting a graph if resolved - done(backend, frontend)
     - improved feedback. - done - test it. 
-    - feedback from frontend.
+    - feedback from frontend. - done looks good integrate
     - pandas preprocessing.
     - config. - done
 

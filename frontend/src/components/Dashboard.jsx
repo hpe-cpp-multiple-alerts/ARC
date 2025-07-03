@@ -23,10 +23,32 @@ const Dashboard = () => {
         // Set up message handler
         websocketService.setMessageCallback(handleWebSocketMessage);
 
+        // Expose toast globally for GraphList
+        window.toast = toast;
+
+        // Listen for batchDeleted event
+        const handleBatchDeleted = (e) => {
+            const { graphId } = e.detail;
+            setGraphs((prev) => {
+                const newGraphs = { ...prev };
+                delete newGraphs[graphId];
+                return newGraphs;
+            });
+        };
+        window.addEventListener('batchDeleted', handleBatchDeleted);
+
         return () => {
             websocketService.disconnect();
+            window.removeEventListener('batchDeleted', handleBatchDeleted);
         };
     }, []);
+
+    // Expose graphs on window for FeedbackPage
+    React.useEffect(() => {
+        if (typeof window !== 'undefined') {
+            window.graphs = graphs;
+        }
+    }, [graphs]);
 
     const handleWebSocketMessage = (message) => {
         handleCreateGraph(message);

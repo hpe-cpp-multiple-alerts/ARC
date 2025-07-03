@@ -4,6 +4,30 @@ from src.notifier import WsNotifier
 from . import BaseListener, log
 from src.message_queue import BaseMessageQueue
 from aiohttp import web
+import re
+
+LOCALHOST_ORIGIN_PATTERN = re.compile(r"^http://localhost(:\d+)?$")
+
+
+@web.middleware
+async def cors_middleware(request, handler):
+    # Get Origin header (if any)
+    origin = request.headers.get("Origin")
+
+    # Handle preflight (OPTIONS) before reaching route handlers
+    if request.method == "OPTIONS":
+        response = web.Response(status=204)
+    else:
+        response = await handler(request)
+
+    # Only apply CORS if the origin is from localhost
+    if origin and LOCALHOST_ORIGIN_PATTERN.match(origin):
+        response.headers["Access-Control-Allow-Origin"] = origin
+        response.headers["Access-Control-Allow-Methods"] = "GET,POST,PUT,DELETE,OPTIONS"
+        response.headers["Access-Control-Allow-Headers"] = "*"
+        response.headers["Access-Control-Allow-Credentials"] = "true"
+
+    return response
 
 
 logger = logging.getLogger(__name__)
@@ -39,7 +63,7 @@ this is the structure of the alert that will be sent by alertmanager
 class HTTPListener(BaseListener):
     def __init__(self, work_queue: BaseMessageQueue, notifier: WsNotifier) -> None:
         self.work_queue = work_queue
-        self.app = web.Application()
+        self.app = web.Application(middlewares=[cors_middleware])
         self.fb_handler = None
         self.w_sockets = set()
         self.notifier = notifier
@@ -89,6 +113,7 @@ class HTTPListener(BaseListener):
         if gid is None:
             return
         await self.notifier.delete_group(gid)
+        return web.Response(status=200)
 
     async def web_socket_handler(self, request: web.Request):
         logger.info("A new ws request arrived.")
