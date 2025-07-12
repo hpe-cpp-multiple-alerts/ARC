@@ -270,4 +270,4 @@ pattren = [
     *alerts_with_noise[SCENARIO][2],
 ]
 
-requests.post("http://localhost:8080/alerts", json={"alerts": pattren})
+requests.post("http://localhost:8080/api/alerts", json={"alerts": pattren})

@@ -1,4 +1,6 @@
 import logging
+import os
+from pathlib import Path
 from src.models.feedback import FeedBack
 from src.notifier import WsNotifier
 from . import BaseListener, log
@@ -69,12 +71,20 @@ class HTTPListener(BaseListener):
         self.notifier = notifier
         self.app.add_routes(
             [
-                web.post("/alerts", self.receive_alert),
-                web.post("/feedback", self.receive_feedback),
-                web.get("/ws", self.web_socket_handler),
-                web.delete("/batch", self.batch_delete_handler),
+                web.post("/api/alerts", self.receive_alert),
+                web.post("/api/feedback", self.receive_feedback),
+                web.get("/api/ws", self.web_socket_handler),
+                web.delete("/api/batch", self.batch_delete_handler),
             ]
         )
+
+        static_path = Path(os.getcwd()) / "dist"
+
+        async def index(request):
+            return web.FileResponse(static_path / "index.html")
+
+        self.app.router.add_route("*", "/", index)
+        self.app.router.add_static("/", path=static_path, follow_symlinks=True)
 
         self.runner = web.AppRunner(self.app)
         self.site = None
@@ -104,6 +114,8 @@ class HTTPListener(BaseListener):
 
         if self.fb_handler:
             self.fb_handler(fb)
+
+        return web.Response(status=200)
 
     def set_feedback_listner(self, handler):
         self.fb_handler = handler

@@ -2,6 +2,7 @@ import React from "react";
 import GraphViewer from "./GraphViewer";
 import NodeDetails from "./NodeDetails";
 import { useNavigate } from 'react-router-dom';
+import FeedbackPage from "./FeedbackPage";
 
 const GraphDetail = ({
     graphId,
@@ -11,6 +12,7 @@ const GraphDetail = ({
     selectedNodeData,
 }) => {
     const navigate = useNavigate();
+    const [showFeedback, setShowFeedback] = React.useState(false);
     const handleDeleteGraph = async () => {
         try {
             const response = await fetch(`http://localhost:8080/batch?group_id=${encodeURIComponent(graphId)}`, {
@@ -52,7 +54,7 @@ const GraphDetail = ({
                 </div>
                 <button
                     className="feedback-btn"
-                    onClick={() => navigate(`/feedback/${graphId}`)}
+                    onClick={() => setShowFeedback(true)}
                     style={{ background: '#10b981', color: 'white', border: 'none', borderRadius: '6px', padding: '0.375rem 0.75rem', fontSize: '0.7rem', cursor: 'pointer', marginRight: '0.5rem' }}
                 >
                     Feedback
@@ -83,6 +85,42 @@ const GraphDetail = ({
                     <NodeDetails nodeData={selectedNodeData} />
                 </div>
             </div>
+            {showFeedback && (
+                <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    width: '100vw',
+                    height: '100vh',
+                    background: 'rgba(30,41,59,0.18)',
+                    zIndex: 1000,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                }}>
+                    <div style={{ position: 'relative', zIndex: 1001 }}>
+                        <FeedbackPage graphId={graphId} graph={graph} onClose={() => setShowFeedback(false)} />
+                        <button
+                            onClick={() => setShowFeedback(false)}
+                            style={{
+                                position: 'absolute',
+                                top: 25,
+                                right: 10,
+                                background: '#dc2626',
+                                color: '#fff',
+                                border: 'none',
+                                borderRadius: 6,
+                                padding: '0.3rem 0.7rem',
+                                fontSize: '0.9rem',
+                                cursor: 'pointer',
+                                zIndex: 1002,
+                            }}
+                        >
+                            ✕
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

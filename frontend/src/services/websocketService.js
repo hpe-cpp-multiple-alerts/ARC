@@ -8,7 +8,7 @@ class WebSocketService {
         this.reconnectDelay = 1000;
     }
 
-    connect(url = "ws://localhost:8080/ws") {
+    connect(url = "ws://localhost:8080/api/ws") {
         try {
             this.ws = new WebSocket(url);
 
@@ -76,4 +76,3 @@ class WebSocketService {
 }
 
 export default new WebSocketService();
-

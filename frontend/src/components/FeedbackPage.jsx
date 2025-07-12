@@ -1,20 +1,8 @@
-import React, { useState, useMemo } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
 
 const redAccent = '#dc2626';
 
-const FeedbackPage = () => {
-    const { graphId } = useParams();
-    const navigate = useNavigate();
-
-    // Get the graph data from window.graphs (set in Dashboard)
-    const graph = useMemo(() => {
-        if (typeof window !== 'undefined' && window.graphs) {
-            return window.graphs[graphId];
-        }
-        return null;
-    }, [graphId]);
-
+const FeedbackPage = ({ graphId, graph, onClose }) => {
     // Extract alerts and edges from the graph
     const alerts = graph ? graph.nodes.map(n => ({
         id: n.data.id,
@@ -49,6 +37,7 @@ const FeedbackPage = () => {
         );
     };
     const handleAddLink = () => {
+        if (!newLinkSource || !newLinkTarget) return;
         if (newLinkSource === newLinkTarget) return;
         // Prevent duplicate links
         if (addedLinks.some(l => l.source === newLinkSource && l.target === newLinkTarget)) return;
@@ -57,21 +46,61 @@ const FeedbackPage = () => {
             { source: newLinkSource, target: newLinkTarget }
         ]);
     };
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         const feedback = {
             graphId,
             notBelong: notBelongIds,
-            falsePositives: falsePositiveIds,
+            falsePositives: falsePositiveIds.map(id => {
+                const [source, target] = id.split('->');
+                return { source, target };
+            }),
             addedLinks,
         };
-        // TODO: send to backend
-        console.log('Feedback submitted:', feedback);
-        alert('Feedback submitted!');
-        navigate('/');
+        try {
+            console.log('Feedback submitted:', feedback);
+            const response = await fetch('http://localhost:8080/feedback', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(feedback),
+            });
+            if (response.ok) {
+                alert('Feedback submitted!');
+                if (onClose) onClose();
+            } else {
+                alert('Failed to submit feedback.');
+            }
+        } catch (err) {
+            alert('Error submitting feedback.');
+        }
     };
     if (!graph) {
-        return <div style={{ maxWidth: 500, margin: '2rem auto', color: redAccent, textAlign: 'center' }}>No data found for this group.</div>;
+        return (
+            <div style={{ maxWidth: 500, margin: '2rem auto', color: redAccent, textAlign: 'center' }}>
+                No data found for this group.
+                {onClose && (
+                    <><br /><button
+                        style={{
+                            marginTop: '1.5rem',
+                            background: '#3b82f6',
+                            color: '#fff',
+                            border: 'none',
+                            borderRadius: 8,
+                            padding: '0.6rem 1.2rem',
+                            fontSize: '1rem',
+                            cursor: 'pointer',
+                            fontWeight: 500,
+                            boxShadow: '0 1px 4px rgba(59,130,246,0.08)'
+                        }}
+                        onClick={onClose}
+                    >
+                        Close
+                    </button></>
+                )}
+            </div>
+        );
     }
     return (
         <div style={{ maxWidth: "50vw", margin: '.75rem auto', background: '#fff', border: '1.5px solid #e2e8f0', borderRadius: 18, padding: '1.5rem 2.2rem', boxShadow: '0 4px 32px rgba(59,130,246,0.07)' }}>

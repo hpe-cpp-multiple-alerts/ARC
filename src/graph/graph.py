@@ -53,6 +53,32 @@ class ServiceGraph(BaseGraph):
         for parent in this.parents:
             parent.children.remove(this)
 
+    def get_connected_down(self, id: int):
+        if id not in self.graph:
+            raise InvalidOperationError(f"{id} not in graph.")
+
+        curr = [self.graph[id]]
+        while len(curr):
+            children = set()
+            for i in curr:
+                children.update(i.children)
+            yield from children
+            curr = children
+        return
+
+    def get_connected(self, id: int):
+        if id not in self.graph:
+            raise InvalidOperationError(f"{id} not in graph.")
+
+        curr = [self.graph[id]]
+        while len(curr):
+            parents = set()
+            for i in curr:
+                parents.update(i.parents)
+            yield from parents
+            curr = parents
+        return
+
     def get_parents(self, id: int):
         # if id not in self.graph:
         #     raise InvalidOperationError(f"{id} not in graph.")

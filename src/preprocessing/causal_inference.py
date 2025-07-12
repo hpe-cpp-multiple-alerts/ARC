@@ -86,7 +86,10 @@ def process_batch(
         service_to_alerts[alert.service].append(alert)
 
     for alert in batch:
-        parent_services = graph.get_parents(alert.service)
+        parent_services = graph.get_connected(
+            alert.service
+        )  # connect the most suitable alert.
+        # parent_services = graph.get_parents(alert.service)
         a: set[Alert] = set(
             [
                 *itertools.chain(

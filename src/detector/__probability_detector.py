@@ -76,8 +76,8 @@ class AlertBatch:
                         cfg.initial_beta,
                     ]
 
-        parents = self.service_graph.get_parents(alert.service)
-        children = self.service_graph.get_dependents(alert.service)
+        parents = self.service_graph.get_connected(alert.service)
+        children = self.service_graph.get_connected_down(alert.service)
 
         for p in parents:
             for p_alert in self.service_to_alert[p.id]:
