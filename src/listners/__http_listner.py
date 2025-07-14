@@ -84,7 +84,7 @@ class HTTPListener(BaseListener):
             return web.FileResponse(static_path / "index.html")
 
         self.app.router.add_route("*", "/", index)
-        self.app.router.add_static("/", path=static_path, follow_symlinks=True)
+        self.app.router.add_static("/", path=static_path)
 
         self.runner = web.AppRunner(self.app)
         self.site = None
