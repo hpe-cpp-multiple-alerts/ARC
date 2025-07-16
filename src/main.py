@@ -4,6 +4,8 @@ import os
 
 
 from src.graph.__base import BaseGraph
+from src.ingress import PollerIngress
+from src.http_server import HTTPServer
 from src.storage.__base import BaseAlertStore
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -11,14 +13,15 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import asyncio
 import json
 
+from src import log
+
 from src.notifier import WsNotifier
 from src.graph import ServiceGraph
-from src.listners import HTTPListener
 from src.message_queue import AsyncQueue
 from src.detector import ProbabilityDetector
 from src.storage import DictStore
 from src.preprocessing.causal_inference import compute_alpha_beta_links
-from src.models.alert import Alert
+from src.models import Alert
 
 
 async def preprocess(graph: BaseGraph, store: BaseAlertStore):
@@ -54,17 +57,22 @@ async def main(config):
 
     # Initialize detector
     detector = ProbabilityDetector(graph, mq, store, notifier, precomputed_links)
+    p_ingress = (
+        # 1 minute.
+        PollerIngress(mq, 1).with_url("http://localhost:8081").with_token("something")
+    )
 
-    # Set up listener and start services
-    httpserver = HTTPListener(mq, notifier)
-    httpserver.set_feedback_listner(detector.feedback_handler)
+    httpserver = HTTPServer(notifier, detector.feedback_handler)
     try:
-        await asyncio.gather(detector.start(), httpserver.listen())
+        await asyncio.gather(detector.start(), httpserver.listen(), p_ingress.begin())
     except asyncio.CancelledError:
         print()
         await httpserver.close()
         await notifier.free_wsockets()
         raise
+    except Exception as e:
+        log.warning(f"Error in system {e}")
+        return
 
 
 def parse_config():

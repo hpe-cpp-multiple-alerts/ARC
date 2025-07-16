@@ -1,10 +1,10 @@
 import logging
 import os
 from pathlib import Path
-from src.models.feedback import FeedBack
-from src.notifier import WsNotifier
-from . import BaseListener, log
-from src.message_queue import BaseMessageQueue
+from typing import Callable
+from src.models import FeedBack
+from src.notifier.__ws_notifier import WsNotifier
+from . import log
 from aiohttp import web
 import re
 
@@ -34,44 +34,15 @@ async def cors_middleware(request, handler):
 
 logger = logging.getLogger(__name__)
 
-"""
-this is the structure of the alert that will be sent by alertmanager
-{
-  "version": "4",
-  "groupKey": <string>,              // key identifying the group of alerts (e.g. to deduplicate)
-  "truncatedAlerts": <int>,          // how many alerts have been truncated due to "max_alerts"
-  "status": "<resolved|firing>",
-  "receiver": <string>,
-  "groupLabels": <object>,
-  "commonLabels": <object>,
-  "commonAnnotations": <object>,
-  "externalURL": <string>,           // backlink to the Alertmanager.
-  "alerts": [
-    {
-      "status": "<resolved|firing>",
-      "labels": <object>,
-      "annotations": <object>,
-      "startsAt": "<rfc3339>",
-      "endsAt": "<rfc3339>",
-      "generatorURL": <string>,      // identifies the entity that caused the alert
-      "fingerprint": <string>        // fingerprint to identify the alert
-    },
-    ...
-  ]
-}
-"""
 
-
-class HTTPListener(BaseListener):
-    def __init__(self, work_queue: BaseMessageQueue, notifier: WsNotifier) -> None:
-        self.work_queue = work_queue
+class HTTPServer:
+    def __init__(self, notifier: WsNotifier, fb_handler: Callable) -> None:
         self.app = web.Application(middlewares=[cors_middleware])
-        self.fb_handler = None
+        self.fb_handler = fb_handler
         self.w_sockets = set()
         self.notifier = notifier
         self.app.add_routes(
             [
-                web.post("/api/alerts", self.receive_alert),
                 web.post("/api/feedback", self.receive_feedback),
                 web.get("/api/ws", self.web_socket_handler),
                 web.delete("/api/batch", self.batch_delete_handler),
@@ -97,16 +68,6 @@ class HTTPListener(BaseListener):
         log.info(f"HTTPListener is running on http://{host}:{port}")
         await self.site.start()
 
-    async def receive_alert(self, request: web.Request):
-        try:
-            alerts = await request.json()
-        except Exception:
-            return web.Response(status=400)
-
-        self.work_queue.put_nowait(convert_to_alerts(alerts))
-
-        return web.Response(status=200)
-
     async def receive_feedback(self, request: web.Request):
         """Processes the feedback from json to custom Feedback type and sends to detector"""
         # add logic to change feedback to normal thing
@@ -116,9 +77,6 @@ class HTTPListener(BaseListener):
             self.fb_handler(fb)
 
         return web.Response(status=200)
-
-    def set_feedback_listner(self, handler):
-        self.fb_handler = handler
 
     async def batch_delete_handler(self, request: web.Request):
         gid = request.query.get("group_id")
@@ -147,8 +105,3 @@ class HTTPListener(BaseListener):
     async def close(self):
         log.info("Stopping http server.")
         await self.site.stop()
-
-
-def convert_to_alerts(json_data):
-    logger.debug("Alert came processing it.", json_data)
-    return json_data["alerts"]

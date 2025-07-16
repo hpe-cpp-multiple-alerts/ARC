@@ -1,0 +1,5 @@
+1. change ppt
+2. make pull based listner.
+3. change the schema of generator.
+4. add config support better.
+5. read alerts from csv instead of josn split.

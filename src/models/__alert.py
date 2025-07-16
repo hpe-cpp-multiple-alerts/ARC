@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 from enum import Enum
 import hashlib
 
-from .node import GraphNode
+from . import GraphNode
 
 
 class ALERT_STATE(Enum):
@@ -11,11 +11,6 @@ class ALERT_STATE(Enum):
 
 
 status = {"resolved": ALERT_STATE.RESOLVED, "firing": ALERT_STATE.FIRING}
-
-
-# def change_to_date(t_str):
-#     dt = datetime.strptime(t_str, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
-#     return dt
 
 
 def change_to_date(t_str):
