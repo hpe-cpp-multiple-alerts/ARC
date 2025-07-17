@@ -1,1 +1,4 @@
 1. less abstract.
+
+2. context animation.
+3. animation showing how alerts behave in differnt scenarios.

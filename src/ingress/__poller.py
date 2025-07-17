@@ -5,10 +5,11 @@ import aiohttp
 from src.models import Alert
 from . import BaseIngress
 from src.message_queue import BaseMessageQueue
+from src.config import cfg
 
 log = logging.getLogger(__name__)
 
-MAX_FAILURES = 10
+MAX_FAILURES = cfg.polling.max_failures
 
 
 class PollerIngress(BaseIngress):

@@ -11,14 +11,16 @@ from src.storage import BaseAlertStore
 from src.config import cfg
 
 
-def is_temporally_valid(parent_alert, child_alert, delta=cfg.time_delta) -> bool:
+def is_temporally_valid(
+    parent_alert, child_alert, delta=cfg.detector.time_delta
+) -> bool:
     return (
         parent_alert.startsAt <= child_alert.startsAt <= parent_alert.startsAt + delta
     )
 
 
 def batch_alerts(
-    alerts: List[Alert], gap_threshold=cfg.batch_gap_threshold
+    alerts: List[Alert], gap_threshold=cfg.detector.batch_gap_threshold
 ) -> List[List[Alert]]:
     alerts = sorted(alerts, key=lambda a: a.startsAt)
     batches = []
@@ -77,9 +79,9 @@ def normalize_batches(batches: List[List[Alert]]) -> List[List[Alert]]:
 
 
 def process_batch(
-    batch: List[Alert], graph, delta=cfg.time_delta
+    batch: List[Alert], graph, delta=cfg.detector.time_delta
 ) -> Dict[Tuple[str, str], List[int]]:
-    links = defaultdict(lambda: [cfg.initial_alpha, cfg.initial_beta])
+    links = defaultdict(lambda: [cfg.detector.initial_alpha, cfg.detector.initial_beta])
     service_to_alerts = defaultdict(list)
 
     for alert in batch:
@@ -137,7 +139,9 @@ async def compute_alpha_beta_links(
 ) -> Dict[Tuple[str, str], List[int]]:
     batches = batch_alerts(alerts)
     normalized_batches = normalize_batches(batches)
-    total_links = defaultdict(lambda: [cfg.initial_alpha, cfg.initial_beta])
+    total_links = defaultdict(
+        lambda: [cfg.detector.initial_alpha, cfg.detector.initial_beta]
+    )
 
     print("Total batches: ", len(batches))
     print("Normalised batches: ", len(normalized_batches))
@@ -149,8 +153,8 @@ async def compute_alpha_beta_links(
             await store.put(al.id, al)
 
         for key, (a, b) in batch_links.items():
-            total_links[key][0] += a - cfg.initial_alpha
-            total_links[key][1] += b - cfg.initial_beta
+            total_links[key][0] += a - cfg.detector.initial_alpha
+            total_links[key][1] += b - cfg.detector.initial_beta
 
     return total_links
 

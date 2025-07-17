@@ -42,9 +42,9 @@ class AlertBatch:
     def check_temporal(self, alert: Alert):
         if self.lower_bound:
             if not (
-                self.lower_bound - cfg.time_delta
+                self.lower_bound - cfg.detector.time_delta
                 <= alert.startsAt
-                <= self.upper_bound + cfg.time_delta
+                <= self.upper_bound + cfg.detector.time_delta
             ):
                 return False
         return True
@@ -67,13 +67,13 @@ class AlertBatch:
                 linked = True
                 if (o_alert.id, alert.id) not in self.links:
                     self.links[(o_alert.id, alert.id)] = [
-                        cfg.initial_alpha,
-                        cfg.initial_beta,
+                        cfg.detector.initial_alpha,
+                        cfg.detector.initial_beta,
                     ]
                 if (alert.id, o_alert.id) not in self.links:
                     self.links[(alert.id, o_alert.id)] = [
-                        cfg.initial_alpha,
-                        cfg.initial_beta,
+                        cfg.detector.initial_alpha,
+                        cfg.detector.initial_beta,
                     ]
 
         parents = self.service_graph.get_connected(alert.service)
@@ -84,8 +84,8 @@ class AlertBatch:
                 linked = True
                 if (p_alert.id, alert.id) not in self.links:
                     self.links[(p_alert.id, alert.id)] = [
-                        cfg.initial_alpha,
-                        cfg.initial_beta,
+                        cfg.detector.initial_alpha,
+                        cfg.detector.initial_beta,
                     ]
         if linked:
             log.debug("Found a parent for this alert.")
@@ -95,8 +95,8 @@ class AlertBatch:
                 linked = True
                 if (alert.id, c_alert.id) not in self.links:
                     self.links[(alert.id, c_alert.id)] = [
-                        cfg.initial_alpha,
-                        cfg.initial_beta,
+                        cfg.detector.initial_alpha,
+                        cfg.detector.initial_beta,
                     ]
 
         if not linked:
@@ -263,20 +263,20 @@ class AlertBatch:
 
     async def get_strength(self, parent_id: int, child_id: int) -> tuple[bool, float]:
         alpha, beta_ = self.links.get(
-            (parent_id, child_id), (cfg.initial_alpha, cfg.initial_beta)
+            (parent_id, child_id), (cfg.detector.initial_alpha, cfg.initial_beta)
         )
         total = (await self.store.get(child_id))[1]
         # print(alpha, beta_)
 
         strength = alpha / total
 
-        should = strength >= cfg.confidence_threshold
+        should = strength >= cfg.detector.confidence_threshold
         return should, strength
 
     async def _notify_after_delay(self, group: AlertGroup):
         root = group.root
         try:
-            await asyncio.sleep(cfg.delay)
+            await asyncio.sleep(cfg.detector.delay)
             log.info(f"Notifying root={root.id} for {len(group.group)} alerts")
             await self.notifier.notify(group)
             self.groups.remove(group)
@@ -304,7 +304,7 @@ class ProbabilityDetector(BaseDetector):
         super().__init__(graph, work_queue, store, notifier)
 
         self.links = precomputed_links or defaultdict(
-            lambda: [cfg.initial_alpha, cfg.initial_beta]
+            lambda: [cfg.detector.initial_alpha, cfg.initial_beta]
         )
         self.batches: list[AlertBatch] = []
 

@@ -1,4 +1,3 @@
-from pathlib import Path
 import sys
 import os
 
@@ -24,8 +23,7 @@ from src.preprocessing.causal_inference import compute_alpha_beta_links
 from src.models import Alert
 
 
-async def preprocess(graph: BaseGraph, store: BaseAlertStore):
-    data_path = Path(__file__).parent.parent / "test_data/data"
+async def preprocess(graph: BaseGraph, store: BaseAlertStore, data_path):
     alert_jsons = []
     for f in data_path.iterdir():
         with open(f, "r") as fp:
@@ -50,16 +48,16 @@ async def preprocess(graph: BaseGraph, store: BaseAlertStore):
 
 async def main(config):
     notifier = WsNotifier()
-    graph = ServiceGraph("test_data/test_service_map.yaml")
+    graph = ServiceGraph(cfg.service_graph.path)
     mq = AsyncQueue()
-    store = DictStore("test/alerts")
-    precomputed_links = await preprocess(graph, store)
+    store = DictStore(cfg.store.path)
+    precomputed_links = await preprocess(graph, store, cfg.historic_data.path)
 
     # Initialize detector
     detector = ProbabilityDetector(graph, mq, store, notifier, precomputed_links)
     p_ingress = (
         # 1 minute.
-        PollerIngress(mq, 1).with_url("http://localhost:8081").with_token("something")
+        PollerIngress(mq, 1).with_url(cfg.polling.url).with_token(cfg.polling.token)
     )
 
     httpserver = HTTPServer(notifier, detector.feedback_handler)
@@ -75,13 +73,10 @@ async def main(config):
         return
 
 
-def parse_config():
-    pass
-
-
 if __name__ == "__main__":
     try:
-        cfg = parse_config()
+        from src.config import cfg
+
         asyncio.run(main(cfg))
     except KeyboardInterrupt:
         print("Exiting the application.")

@@ -15,11 +15,11 @@ ALERT_GAP_RANGE_SECONDS = (30, 50)
 ALERT_DURATION_MINUTES = 3
 OUTPUT_DIR = "./test_data/data/"
 TYPE1_NOISE_DIR = "./test_data/type1_noise"
-NOISE_DAY_PERCENT = 0.4  # Only 40% of days can have any noise
+NOISE_DAY_PERCENT = 0.4
 
 # === FIXED SCENARIOS ===
 SCENARIOS = [
-    ["2.2", "3.2", "4.1"],  # 7.1, 1.2
+    ["2.2", "3.2", "4.1"],
     ["1.1", "4.2", "5.1"],
     ["2.1", "3.2", "4.1", "5.1"],
     ["1.2", "4.1", "6.1", "6.2"],
