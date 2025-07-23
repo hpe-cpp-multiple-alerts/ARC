@@ -3,17 +3,12 @@ from datetime import datetime, timezone
 from . import GraphNode
 
 
+def change_to_timestamp(t_str):
+    return datetime.strptime(t_str.replace(" IST", ""), "%b %d, %Y, %I:%M:%S %p")
+
+
 def change_to_date(t_str):
     # Accepts both with and without milliseconds
-    # try:
-    #     return datetime.strptime(t_str, "%Y-%m-%dT%H:%M:%S.%f").replace(
-    #         tzinfo=timezone.utc
-    #     )
-    # except ValueError:
-    #     return datetime.strptime(t_str, "%Y-%m-%dT%H:%M:%S").replace(
-    #         tzinfo=timezone.utc
-    #     )
-
     return datetime.strptime(t_str, "%m-%d-%Y").replace(tzinfo=timezone.utc)
 
 
@@ -25,7 +20,7 @@ class Alert:
         self.alert = alert_json
         self.service_name = alert_json["Resource Name"]
         self.service = GraphNode.get_id(self.service_name)
-        self.startsAt = change_to_date(alert_json["Start Date"])
+        self.startsAt = change_to_timestamp(alert_json["Created Time"])
         self.endsAt = change_to_date(alert_json["End Date"])
         # self.status =
         self.is_root_cause = False
