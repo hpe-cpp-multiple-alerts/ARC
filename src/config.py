@@ -1,4 +1,5 @@
 from datetime import timedelta
+from pathlib import Path
 import sys
 from attr import dataclass
 import yaml
@@ -42,7 +43,7 @@ class ServiceGraph:
 
 @dataclass
 class HistoricData:
-    path: str = "test_data/data"
+    path: Path = Path("test_data/data")
 
 
 @dataclass
