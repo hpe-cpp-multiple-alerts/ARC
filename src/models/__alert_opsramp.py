@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+import hashlib
 
 from . import GraphNode
 
@@ -31,8 +32,8 @@ class Alert:
         self.description = alert_json["Metric"]
         self.summary = alert_json["Subject"]
 
-        # self.id = self.__get_id()
-        self.id = f"{self.service}.{self.alert['Instance']}"
+        self.id = self.__get_id()
+        # self.id = f"{self.service}.{self.alert['Instance']}"
 
     def __str__(self) -> str:
         return f"Alert from service {self.service_name} with name `{self.description}` started at {self.startsAt} with severity {self.severity}"
@@ -47,3 +48,8 @@ class Alert:
 
     def __repr__(self) -> str:
         return self.id
+
+    def __get_id(self) -> str:
+        s = f"{self.service}.{self.alert['Instance']}"
+        h = hashlib.sha256(s.encode()).digest()
+        return str(int.from_bytes(h, "big"))[:15]
