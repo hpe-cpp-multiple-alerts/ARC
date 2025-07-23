@@ -68,9 +68,9 @@ def load_config(path: str) -> AppConfig:
         detector=Detector(**raw["detector"]),
         polling=Polling(**raw["polling"]),
         server=Server(**raw["server"]),
-        store=Store(**raw["store"]),
-        historic_data=HistoricData(**raw["historic_data"]),
-        service_graph=ServiceGraph(**raw["service_graph"]),
+        store=Store(),
+        historic_data=HistoricData(),
+        service_graph=ServiceGraph(),
     )
 
 

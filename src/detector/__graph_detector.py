@@ -8,7 +8,7 @@ from . import BaseDetector, log
 from src.message_queue import BaseMessageQueue
 from src.graph import BaseGraph
 from src.notifier import BaseNotifier
-from src.models import ALERT_STATE, Alert, GraphNode
+from src.models import Alert, GraphNode
 
 
 class GraphDetector(BaseDetector):
@@ -43,16 +43,16 @@ class GraphDetector(BaseDetector):
 
         # Handle resolved first
         stored, _ = await self.store.get(alert.id)
-        if stored:
-            if (
-                stored.status == ALERT_STATE.FIRING
-                and alert.status == ALERT_STATE.RESOLVED
-            ):
-                await self._handle_resolved(alert)
-            else:
-                log.debug("Duplicate alert detected skipping.")
-                pass
-            return
+        # if stored:
+        # if (
+        #     stored.status == ALERT_STATE.FIRING
+        #     and alert.status == ALERT_STATE.RESOLVED
+        # ):
+        #     await self._handle_resolved(alert)
+        # else:
+        # log.debug("Duplicate alert detected skipping.")
+        # pass
+        # return
 
         # Store or update
         await self.store.put(alert.id, alert)
