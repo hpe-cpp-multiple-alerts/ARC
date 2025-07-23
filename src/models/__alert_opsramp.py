@@ -5,14 +5,16 @@ from . import GraphNode
 
 def change_to_date(t_str):
     # Accepts both with and without milliseconds
-    try:
-        return datetime.strptime(t_str, "%Y-%m-%dT%H:%M:%S.%f").replace(
-            tzinfo=timezone.utc
-        )
-    except ValueError:
-        return datetime.strptime(t_str, "%Y-%m-%dT%H:%M:%S").replace(
-            tzinfo=timezone.utc
-        )
+    # try:
+    #     return datetime.strptime(t_str, "%Y-%m-%dT%H:%M:%S.%f").replace(
+    #         tzinfo=timezone.utc
+    #     )
+    # except ValueError:
+    #     return datetime.strptime(t_str, "%Y-%m-%dT%H:%M:%S").replace(
+    #         tzinfo=timezone.utc
+    #     )
+
+    return datetime.strptime(t_str, "%m-%d-%Y").replace(tzinfo=timezone.utc)
 
 
 class Alert:
