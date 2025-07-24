@@ -7,6 +7,9 @@ from src.notifier import BaseNotifier
 from src.storage import BaseAlertStore
 
 
+START_AT = "startsAt"
+
+
 class BaseDetector(ABC):
     def __init__(
         self,
@@ -25,11 +28,10 @@ class BaseDetector(ABC):
         """this is the main func that needs to start and then listen for alerts and process it."""
         while True:
             batch = await self.queue.get()
-            for raw in sorted(batch, key=lambda x: x.get("startsAt")):
+            for raw in sorted(batch, key=lambda x: x.get(START_AT)):
                 alert = Alert(raw)
-                if alert.severity == "critical":
-                    await self.store.put(alert.id, alert)
-                    await self.process_alert(alert)
+                await self.store.put(alert.id, alert)
+                await self.process_alert(alert)
 
     async def process_alert(self, alert: Alert):
         pass

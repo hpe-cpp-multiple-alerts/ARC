@@ -2,7 +2,7 @@ import asyncio
 import logging
 
 import aiohttp
-from src.models import Alert
+from src.ingress import convert_to_alerts
 from . import BaseIngress
 from src.message_queue import BaseMessageQueue
 from src.config import cfg
@@ -34,7 +34,7 @@ class PollerIngress(BaseIngress):
             await self.put_in_mq(alerts)
             await asyncio.sleep(self.interval)
 
-    async def get(self) -> list[Alert]:
+    async def get(self) -> list[dict]:
         # http call to the url.
         headers = {"Authorization": f"Bearer {self.token}"}
 
@@ -44,7 +44,7 @@ class PollerIngress(BaseIngress):
                     if response.status != 200:
                         raise Exception("temp")
                     data = await response.json()
-                    return [Alert(x) for x in data["alerts"]]
+                    return convert_to_alerts(data)
             except asyncio.CancelledError:
                 raise
             except Exception:
@@ -56,6 +56,8 @@ class PollerIngress(BaseIngress):
                     )
                 return []
 
-    async def put_in_mq(self, alerts: list[Alert]):
-        for a in sorted(alerts, key=lambda x: x.startsAt):
-            await self.mq.put(a)
+    async def put_in_mq(self, alerts: list[dict]):
+        await self.mq.put(alerts)
+
+    async def stop(self):
+        return await super().stop()

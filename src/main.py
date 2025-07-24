@@ -2,10 +2,10 @@ import sys
 import os
 
 
-from src.graph.__base import BaseGraph
-from src.ingress import PollerIngress
+from src.graph import BaseGraph
 from src.http_server import HTTPServer
-from src.storage.__base import BaseAlertStore
+from src.ingress import HTTPIngress
+from src.storage import BaseAlertStore
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -55,14 +55,16 @@ async def main(config):
 
     # Initialize detector
     detector = ProbabilityDetector(graph, mq, store, notifier, precomputed_links)
-    p_ingress = (
-        # 1 minute.
-        PollerIngress(mq, 1).with_url(cfg.polling.url).with_token(cfg.polling.token)
-    )
+    # p_ingress = (
+    #     # 1 minute.
+    #     PollerIngress(mq, 1).with_url(cfg.polling.url).with_token(cfg.polling.token)
+    # )
+
+    h_ingress = HTTPIngress(mq)
 
     httpserver = HTTPServer(notifier, detector.feedback_handler)
     try:
-        await asyncio.gather(detector.start(), httpserver.listen(), p_ingress.begin())
+        await asyncio.gather(detector.start(), httpserver.listen(), h_ingress.begin())
     except asyncio.CancelledError:
         print()
         await httpserver.close()

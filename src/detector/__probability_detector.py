@@ -263,7 +263,8 @@ class AlertBatch:
 
     async def get_strength(self, parent_id: int, child_id: int) -> tuple[bool, float]:
         alpha, beta_ = self.links.get(
-            (parent_id, child_id), (cfg.detector.initial_alpha, cfg.initial_beta)
+            (parent_id, child_id),
+            (cfg.detector.initial_alpha, cfg.detector.initial_beta),
         )
         total = (await self.store.get(child_id))[1]
         # print(alpha, beta_)
@@ -304,7 +305,7 @@ class ProbabilityDetector(BaseDetector):
         super().__init__(graph, work_queue, store, notifier)
 
         self.links = precomputed_links or defaultdict(
-            lambda: [cfg.detector.initial_alpha, cfg.initial_beta]
+            lambda: [cfg.detector.initial_alpha, cfg.detector.initial_beta]
         )
         self.batches: list[AlertBatch] = []
 

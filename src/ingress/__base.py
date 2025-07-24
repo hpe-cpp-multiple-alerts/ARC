@@ -10,4 +10,7 @@ class BaseIngress(ABC):
     @abstractmethod
     async def begin(self):
         """this is to starts the process of putting the alerts in message queue."""
-        pass
+
+    @abstractmethod
+    async def stop(self):
+        """Converse of stop"""
