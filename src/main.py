@@ -29,7 +29,9 @@ async def preprocess(graph: BaseGraph, store: BaseAlertStore, data_path):
         with open(f, "r") as fp:
             alerts = json.load(fp)
             alert_jsons.extend(alerts)
-    historical_alerts = [Alert(a) for a in alert_jsons]
+    historical_alerts = filter(
+        lambda x: x.service != -1, (Alert(a) for a in alert_jsons)
+    )
 
     # Compute α/β link strengths using valid historical alerts
     precomputed_links = await compute_alpha_beta_links(historical_alerts, store, graph)
