@@ -50,6 +50,6 @@ class Alert:
         return self.id
 
     def __get_id(self) -> str:
-        s = f"{self.service}.{self.alert['Instance']}"
+        s = f"{self.service}.{self.summary}"
         h = hashlib.sha256(s.encode()).digest()
         return str(int.from_bytes(h, "big"))[:15]
