@@ -54,8 +54,6 @@ class GraphDetector(BaseDetector):
         # pass
         # return
 
-        # Store or update
-        await self.store.put(alert.id, alert)
         self.active_by_service[alert.service].append(alert.id)
 
         # Link to any waiting root children: if this alert is parent to any roots

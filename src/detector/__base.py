@@ -28,10 +28,13 @@ class BaseDetector(ABC):
         """this is the main func that needs to start and then listen for alerts and process it."""
         while True:
             batch = await self.queue.get()
-            for raw in sorted(batch, key=lambda x: x.get(START_AT)):
+            for raw in sorted(batch, key=lambda x: x[START_AT]):
                 alert = Alert(raw)
-                await self.store.put(alert.id, alert)
-                await self.process_alert(alert)
+                if alert.service == -1:
+                    return
+                placed = await self.store.put(alert.id, alert)
+                if not placed:
+                    await self.process_alert(alert)
 
     async def process_alert(self, alert: Alert):
         pass
