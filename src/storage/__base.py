@@ -12,7 +12,7 @@ class BaseAlertStore(ABC):
         pass
 
     @abstractmethod
-    async def put(self, id, alert: Alert):
+    async def put(self, id, alert: Alert) -> bool:
         pass
 
     @abstractmethod
@@ -25,4 +25,8 @@ class BaseAlertStore(ABC):
 
     @abstractmethod
     async def remove(self, id):
+        pass
+
+    @abstractmethod
+    async def purge_active(self, id):
         pass
