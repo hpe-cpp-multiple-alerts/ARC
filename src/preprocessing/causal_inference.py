@@ -103,7 +103,7 @@ def process_batch(
         a.remove(alert)
         recent_alert: Alert = max(a, key=lambda x: x.startsAt, default=None)
 
-        if recent_alert is None:
+        if recent_alert is None or recent_alert.id == alert.id:
             continue
 
         key = (recent_alert.id, alert.id)

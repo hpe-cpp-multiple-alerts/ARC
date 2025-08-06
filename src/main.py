@@ -56,6 +56,7 @@ async def main(config):
     precomputed_links = await preprocess(graph, store, cfg.historic_data.path)
 
     # Initialize detector
+    store.active.clear()
     detector = ProbabilityDetector(graph, mq, store, notifier, precomputed_links)
     # p_ingress = (
     #     # 1 minute.
