@@ -1,3 +1,4 @@
+from pathlib import Path
 import sys
 import os
 
@@ -23,7 +24,13 @@ from src.preprocessing.causal_inference import compute_alpha_beta_links
 from src.models import Alert
 
 
-async def preprocess(graph: BaseGraph, store: BaseAlertStore, data_path):
+async def preprocess(graph: BaseGraph, store: BaseAlertStore, data_path: Path):
+    if not data_path.exists():
+        log.info(
+            f"Skipping preprocessing as the directory is not present in the disk path={data_path.absolute()}"
+        )
+        return
+
     alert_jsons = []
     for f in data_path.iterdir():
         with open(f, "r") as fp:
@@ -53,7 +60,8 @@ async def main(config):
     graph = ServiceGraph(cfg.service_graph.path)
     mq = AsyncQueue()
     store = DictStore(cfg.store.path)
-    precomputed_links = await preprocess(graph, store, cfg.historic_data.path)
+    # precomputed_links = await preprocess(graph, store, cfg.historic_data.path)
+    precomputed_links = {}
 
     # Initialize detector
     store.active.clear()

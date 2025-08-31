@@ -1,73 +1,87 @@
 # all the alerts should relate to the same service is not working.
 import requests
 
-alerts_with_noise = [
-    [
-        # Base
-        [
-            {
-                "labels": {
-                    "job": "product-catalog-service",
-                    "instance": "1",
-                    "severity": "critical",
-                },
-                "startsAt": "2025-06-29T00:00:00",
-                "endsAt": "2025-06-29T00:03:00",
-                "status": "firing",
-                "annotations": {
-                    "description": "Metadata sync delay",
-                    "summary": "product-catalog-service experienced 'Metadata sync delay'",
-                },
-            },
-            {
-                "labels": {
-                    "job": "inventory-service",
-                    "instance": "2",
-                    "severity": "critical",
-                },
-                "startsAt": "2025-06-29T00:00:30",
-                "endsAt": "2025-06-29T00:03:30",
-                "status": "firing",
-                "annotations": {
-                    "description": "Update failure increase",
-                    "summary": "inventory-service experienced 'Update failure increase'",
-                },
-            },
-            {
-                "labels": {
-                    "job": "order-service",
-                    "instance": "1",
-                    "severity": "critical",
-                },
-                "startsAt": "2025-06-29T00:01:00",
-                "endsAt": "2025-06-29T00:04:00",
-                "status": "firing",
-                "annotations": {
-                    "description": "Order backlog risk",
-                    "summary": "order-service experienced 'Order backlog risk'",
-                },
-            },
-            {
-                "labels": {
-                    "job": "payment-service",
-                    "instance": "1",
-                    "severity": "critical",
-                },
-                "startsAt": "2025-06-29T00:01:30",
-                "endsAt": "2025-06-29T00:04:30",
-                "status": "firing",
-                "annotations": {
-                    "description": "Gateway timeout spike",
-                    "summary": "payment-service experienced 'Gateway timeout spike'",
-                },
-            },
-        ],
-    ],
-]
-
-SCENARIO = 0
+false = False
+true = True
 pattren = [
-    *alerts_with_noise[SCENARIO],
+    {
+        "Id": 438603808,
+        "Object Name": "sv1",
+        "Object Type": "Resource",
+        "Ip Address": "-",
+        "Subject": "sv1 is down",
+        "Metric": "metric1",
+        "Current State": "Critical",
+        "Created Time": "Aug 16, 2025, 12:32:15 AM IST",
+        "Resource Name": "sv1",
+        "Reported Date": "Jul 2025",
+        "Created Date": "07-22-2025",
+        "Start Date": "07-16-2025",
+        "End Date": "07-22-2025",
+    },
+    {
+        "Id": 438608748,
+        "Object Name": "sv2",
+        "Object Type": "Resource",
+        "Ip Address": "172.28.1.6",
+        "Subject": "sv2 is down.",
+        "Metric": "metric2",
+        "Current State": "Ok",
+        "Created Time": "Aug 16, 2025, 12:30:16 AM IST",
+        "Resource Name": "sv2",
+        "Reported Date": "Jul 2025",
+        "Created Date": "07-22-2025",
+        "Start Date": "07-16-2025",
+        "End Date": "07-22-2025",
+    },
+    {
+        "Id": 438614818,
+        "Object Name": "sv3",
+        "Object Type": "Resource",
+        "Ip Address": "-",
+        "Subject": "sv3 is down",
+        "Metric": "metric3",
+        "Current State": "Critical",
+        "Created Time": "Jul 16, 2025, 12:33:25 AM IST",
+        "Resource Name": "sv3",
+        "Reported Date": "Jul 2025",
+        "frequency": "WEEKLY",
+        "Created Date": "07-22-2025",
+        "Start Date": "07-16-2025",
+        "End Date": "07-22-2025",
+    },
+    {
+        "Id": 438623758,
+        "Object Name": "sv4",
+        "Object Type": "Resource",
+        "Ip Address": "172.28.1.7",
+        "Subject": "CaaS API down",
+        "Metric": "metric4",
+        "Current State": "Ok",
+        "Created Time": "Jul 16, 2025, 12:33:44 AM IST",
+        "Resource Name": "sv4",
+        "Reported Date": "Jul 2025",
+        "frequency": "WEEKLY",
+        "Created Date": "07-22-2025",
+        "Start Date": "07-16-2025",
+        "End Date": "07-22-2025",
+    },
+    {
+        "Id": 438623758,
+        "Object Name": "sv5",
+        "Object Type": "Resource",
+        "Ip Address": "172.28.1.7",
+        "Subject": "Caas service unavailable",
+        "Metric": "metric5",
+        "Current State": "Ok",
+        "Created Time": "Jul 16, 2025, 12:33:44 AM IST",
+        "Resource Name": "sv5",
+        "Reported Date": "Jul 2025",
+        "frequency": "WEEKLY",
+        "Created Date": "07-22-2025",
+        "Start Date": "07-16-2025",
+        "End Date": "07-22-2025",
+    },
 ]
 
 requests.post("http://localhost:9090/webhook/alerts", json={"alerts": pattren})

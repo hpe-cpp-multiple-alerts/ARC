@@ -19,7 +19,7 @@ class Alert:
         self.severity = alert_json["Current State"]
         self.group = None
         self.alert = alert_json
-        self.service_name = alert_json["Resource Name"]
+        self.service_name = alert_json["Object Name"]
         self.service = GraphNode.get_id(self.service_name)
         self.startsAt = change_to_timestamp(alert_json["Created Time"])
         self.endsAt = change_to_date(alert_json["End Date"])

@@ -43,7 +43,7 @@ class ServiceGraph:
 
 @dataclass
 class HistoricData:
-    path: Path = Path("test_data/data")
+    path: Path = Path()
 
 
 @dataclass
