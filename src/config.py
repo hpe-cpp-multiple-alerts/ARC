@@ -16,7 +16,7 @@ class Polling:
 @dataclass
 class Detector:
     batch_gap_threshold: timedelta = timedelta(minutes=15)
-    time_delta: timedelta = timedelta(minutes=3)
+    time_delta: timedelta = timedelta(minutes=5)
     confidence_threshold: float = 0.2
 
     initial_alpha: int = 1
@@ -38,7 +38,7 @@ class Store:
 
 @dataclass
 class ServiceGraph:
-    path: str = "test_data/test_service_map.yaml"
+    path: str = "service_dependancy_map.yaml"
 
 
 @dataclass
@@ -64,14 +64,17 @@ def load_config(path: str) -> AppConfig:
     raw["detector"]["batch_gap_threshold"] = timedelta(
         minutes=raw["detector"]["batch_gap_threshold"]
     )
+    raw["historic_data"] = raw.get("historic_data", {})
+    path = raw["historic_data"].get("path", "")
+    raw["historic_data"]["path"] = Path(path)
 
     return AppConfig(
-        detector=Detector(**raw["detector"]),
-        polling=Polling(**raw["polling"]),
-        server=Server(**raw["server"]),
-        store=Store(),
-        historic_data=HistoricData(),
-        service_graph=ServiceGraph(),
+        detector=Detector(**raw.get("detector", {})),
+        polling=Polling(**raw.get("polling", {})),
+        server=Server(**raw.get("server", {})),
+        store=Store(**raw.get("store", {})),
+        historic_data=HistoricData(**raw.get("historic_data", {})),
+        service_graph=ServiceGraph(**raw.get("service_graph", {})),
     )
 
 

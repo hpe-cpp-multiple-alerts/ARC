@@ -30,7 +30,9 @@ class HTTPIngress(BaseIngress):
         except Exception:
             return web.Response(status=400)
 
-        self.mq.put_nowait(convert_to_alerts(alerts))
+        alerts = convert_to_alerts(alerts)
+        log.debug(f"alerts are put to message queue lenght={len(alerts)}")
+        self.mq.put_nowait(alerts)
 
         return web.Response(status=200)
 

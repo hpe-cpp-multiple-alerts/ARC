@@ -1,4 +1,4 @@
-from . import BaseGraph, InvalidOperationError
+from . import BaseGraph, InvalidOperationError, log
 from src.models import GraphNode
 import yaml
 
@@ -13,6 +13,9 @@ class ServiceGraph(BaseGraph):
             self.loaded_from_config = True
             self.config_file = config_file
             self.from_config()
+
+        log.info("loaded graph.")
+        log.debug(f"Service mapping= {GraphNode.srevice_to_id}")
 
     def add(
         self, node_id: int, service: str, parents: set[int], children: set[int]

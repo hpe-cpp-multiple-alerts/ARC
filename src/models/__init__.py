@@ -1,3 +1,7 @@
+from logging import getLogger
+
+log = getLogger(__name__)
+
 from .__node import *
 
 from .__alert_opsramp import *

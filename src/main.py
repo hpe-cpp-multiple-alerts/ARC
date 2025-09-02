@@ -1,6 +1,7 @@
 from pathlib import Path
 import sys
 import os
+import csv
 
 
 from src.graph import BaseGraph
@@ -11,7 +12,6 @@ from src.storage import BaseAlertStore
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import asyncio
-import json
 
 from src import log
 
@@ -25,32 +25,32 @@ from src.models import Alert
 
 
 async def preprocess(graph: BaseGraph, store: BaseAlertStore, data_path: Path):
-    if not data_path.exists():
+    if not data_path.exists() or not data_path.is_file():
         log.info(
             f"Skipping preprocessing as the directory is not present in the disk path={data_path.absolute()}"
         )
         return
 
-    alert_jsons = []
-    for f in data_path.iterdir():
-        with open(f, "r") as fp:
-            alerts = json.load(fp)
-            alert_jsons.extend(alerts)
+    alert_dicts = []
+    with open(data_path, "r", newline="") as fp:
+        alerts = csv.DictReader(fp)
+        alert_dicts.extend(alerts)
     historical_alerts = list(
-        filter(lambda x: x.service != -1, (Alert(a) for a in alert_jsons))
+        filter(lambda x: x.service != -1, (Alert(a) for a in alert_dicts))
     )
 
     # Compute α/β link strengths using valid historical alerts
     precomputed_links = await compute_alpha_beta_links(historical_alerts, store, graph)
-    print("Preprocessing summary:")
-    print(f"Total historical alerts used: {len(historical_alerts)}")
-    print(f"Total computed links: {len(precomputed_links)}")
+    print("***********   Preprocessing summary   *************")
+    print(f"Total historical alerts used : {len(historical_alerts)}")
+    print(f"Total computed links         : {len(precomputed_links)}")
 
     print("Head of the computed links.")
     for i, ((src, dst), (alpha, beta)) in enumerate(precomputed_links.items()):
-        print(f"Link {i + 1}: {src} → {dst} | α={alpha}, β={beta}")
+        print(f"Link {i + 1}: {src} → {dst} | α={alpha},β={beta}")
         if i == 4:
             break
+    print("***************************************************")
 
     return precomputed_links
 
@@ -60,8 +60,7 @@ async def main(config):
     graph = ServiceGraph(cfg.service_graph.path)
     mq = AsyncQueue()
     store = DictStore(cfg.store.path)
-    # precomputed_links = await preprocess(graph, store, cfg.historic_data.path)
-    precomputed_links = {}
+    precomputed_links = await preprocess(graph, store, cfg.historic_data.path)
 
     # Initialize detector
     store.active.clear()
@@ -86,10 +85,14 @@ async def main(config):
         raise
 
 
-if __name__ == "__main__":
+def start():
     try:
-        from src.config import cfg
-
         asyncio.run(main(cfg))
     except KeyboardInterrupt:
         print("Exiting the application.")
+
+
+if __name__ == "__main__":
+    from src.config import cfg
+
+    start()

@@ -73,7 +73,6 @@ def normalize_batches(batches: List[List[Alert]]) -> List[List[Alert]]:
             s = instances
             # s = random.choices(instances, k=target_count)
             normalized_batches.extend(s)
-        # print(len(s))
 
     return normalized_batches
 
@@ -117,8 +116,6 @@ def process_batch(
         #     sorted_parents = sorted(
         #         parent_alerts, key=lambda x: x.startsAt, reverse=True
         #     )
-        #     print(parent_alerts)
-        #     print(sorted_parents)
         #     for parent_alert in sorted_parents:
         #         if parent_alert.id == alert.id:
         #             continue
@@ -143,8 +140,10 @@ async def compute_alpha_beta_links(
         lambda: [cfg.detector.initial_alpha, cfg.detector.initial_beta]
     )
 
-    print("Total batches: ", len(batches))
+    print("***************  Preprocessing Info  **************")
+    print("Total batches     : ", len(batches))
     print("Normalised batches: ", len(normalized_batches))
+    print("***************************************************")
 
     for batch in normalized_batches:
         batch_links = process_batch(batch, graph)
