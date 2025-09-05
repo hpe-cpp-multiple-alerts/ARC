@@ -46,11 +46,30 @@ async def preprocess(graph: BaseGraph, store: BaseAlertStore, data_path: Path):
     print(f"Total computed links         : {len(precomputed_links)}")
 
     print("Head of the computed links.")
-    for i, ((src, dst), (alpha, beta)) in enumerate(precomputed_links.items()):
-        print(f"Link {i + 1}: {src} → {dst} | α={alpha},β={beta}")
-        if i == 4:
-            break
+    links_out_file = "links.csv" if cfg.output.emit_links else os.devnull
+    with open(links_out_file, "w", newline="") as f:
+        wr = csv.DictWriter(
+            f, fieldnames=["index", "source", "destination", "alpha", "beta"]
+        )
+        wr.writeheader()
+
+        for i, ((src, dst), (alpha, beta)) in enumerate(precomputed_links.items()):
+            if i <= 4:
+                print(f"Link {i + 1}: {src} → {dst} | α={alpha},β={beta}")
+
+            wr.writerow(
+                {
+                    "index": i + 1,
+                    "source": src,
+                    "destination": dst,
+                    "alpha": alpha,
+                    "beta": beta,
+                }
+            )
+
     print("***************************************************")
+    if cfg.output.emit_links:
+        log.info(f"Dumped link properties into {links_out_file}")
 
     return precomputed_links
 

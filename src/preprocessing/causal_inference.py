@@ -9,18 +9,19 @@ import random
 from src.models import Alert
 from src.storage import BaseAlertStore
 from src.config import cfg
+from datetime import timedelta
+
+td = timedelta(minutes=cfg.detector.time_delta)
 
 
-def is_temporally_valid(
-    parent_alert, child_alert, delta=cfg.detector.time_delta
-) -> bool:
+def is_temporally_valid(parent_alert, child_alert, delta=td) -> bool:
     return (
         parent_alert.startsAt <= child_alert.startsAt <= parent_alert.startsAt + delta
     )
 
 
 def batch_alerts(
-    alerts: List[Alert], gap_threshold=cfg.detector.batch_gap_threshold
+    alerts: List[Alert], gap_threshold=timedelta(cfg.detector.batch_gap_threshold)
 ) -> List[List[Alert]]:
     alerts = sorted(alerts, key=lambda a: a.startsAt)
     batches = []
@@ -78,7 +79,7 @@ def normalize_batches(batches: List[List[Alert]]) -> List[List[Alert]]:
 
 
 def process_batch(
-    batch: List[Alert], graph, delta=cfg.detector.time_delta
+    batch: List[Alert], graph, delta=td
 ) -> Dict[Tuple[str, str], List[int]]:
     links = defaultdict(lambda: [cfg.detector.initial_alpha, cfg.detector.initial_beta])
     service_to_alerts = defaultdict(list)

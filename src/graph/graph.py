@@ -1,15 +1,16 @@
+from pathlib import Path
 from . import BaseGraph, InvalidOperationError, log
 from src.models import GraphNode
 import yaml
 
 
 class ServiceGraph(BaseGraph):
-    def __init__(self, config_file="service_dependancy_map.yaml") -> None:
+    def __init__(self, config_file: Path) -> None:
         self.graph = {}  # map that maintains all the nodes.
         # internally the nodes are connected.
         self.loaded_from_config = False
 
-        if config_file:
+        if config_file.exists() and config_file.is_file():
             self.loaded_from_config = True
             self.config_file = config_file
             self.from_config()

@@ -1,6 +1,6 @@
 import asyncio
 from collections import defaultdict
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 from src.models import AlertGroup, FeedBack
@@ -11,6 +11,8 @@ from src.graph import BaseGraph
 from src.notifier import BaseNotifier
 from src.models import Alert
 from src.config import cfg
+
+td = timedelta(minutes=cfg.detector.time_delta)
 
 
 class AlertBatch:
@@ -41,11 +43,7 @@ class AlertBatch:
 
     def check_temporal(self, alert: Alert):
         if self.lower_bound:
-            if not (
-                self.lower_bound - cfg.detector.time_delta
-                <= alert.startsAt
-                <= self.upper_bound + cfg.detector.time_delta
-            ):
+            if not (self.lower_bound - td <= alert.startsAt <= self.upper_bound + td):
                 return False
         return True
 
@@ -222,6 +220,7 @@ class AlertBatch:
 
             alert.group = grp
             alert.parent_id = p_alert.id
+            print(alert.id, alert)
             grp.add_other(alert)
         else:
             # assuming no child and no parent

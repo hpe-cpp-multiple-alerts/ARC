@@ -1,87 +1,26 @@
 # all the alerts should relate to the same service is not working.
+import csv
+import itertools
+from pathlib import Path
 import requests
+
 
 false = False
 true = True
-pattren = [
-    {
-        "Id": 438603808,
-        "Object Name": "sv1",
-        "Object Type": "Resource",
-        "Ip Address": "-",
-        "Subject": "sv1 is down",
-        "Metric": "metric1",
-        "Current State": "Critical",
-        "Created Time": "Aug 16, 2025, 12:32:15 AM IST",
-        "Resource Name": "sv1",
-        "Reported Date": "Jul 2025",
-        "Created Date": "07-22-2025",
-        "Start Date": "07-16-2025",
-        "End Date": "07-22-2025",
-    },
-    {
-        "Id": 438608748,
-        "Object Name": "sv2",
-        "Object Type": "Resource",
-        "Ip Address": "172.28.1.6",
-        "Subject": "sv2 is down.",
-        "Metric": "metric2",
-        "Current State": "Ok",
-        "Created Time": "Aug 16, 2025, 12:30:16 AM IST",
-        "Resource Name": "sv2",
-        "Reported Date": "Jul 2025",
-        "Created Date": "07-22-2025",
-        "Start Date": "07-16-2025",
-        "End Date": "07-22-2025",
-    },
-    {
-        "Id": 438614818,
-        "Object Name": "sv3",
-        "Object Type": "Resource",
-        "Ip Address": "-",
-        "Subject": "sv3 is down",
-        "Metric": "metric3",
-        "Current State": "Critical",
-        "Created Time": "Aug 16, 2025, 12:33:25 AM IST",
-        "Resource Name": "sv3",
-        "Reported Date": "Jul 2025",
-        "frequency": "WEEKLY",
-        "Created Date": "07-22-2025",
-        "Start Date": "07-16-2025",
-        "End Date": "07-22-2025",
-    },
-    {
-        "Id": 438623758,
-        "Object Name": "sv4",
-        "Object Type": "Resource",
-        "Ip Address": "172.28.1.7",
-        "Subject": "CaaS API down",
-        "Metric": "metric4",
-        "Current State": "Ok",
-        "Created Time": "Aug 16, 2025, 12:33:44 AM IST",
-        "Resource Name": "sv4",
-        "Reported Date": "Jul 2025",
-        "frequency": "WEEKLY",
-        "Created Date": "07-22-2025",
-        "Start Date": "07-16-2025",
-        "End Date": "07-22-2025",
-    },
-    {
-        "Id": 438623758,
-        "Object Name": "sv5",
-        "Object Type": "Resource",
-        "Ip Address": "172.28.1.7",
-        "Subject": "Caas service unavailable",
-        "Metric": "metric5",
-        "Current State": "Ok",
-        "Created Time": "Aug 16, 2025, 12:33:44 AM IST",
-        "Resource Name": "sv5",
-        "Reported Date": "Jul 2025",
-        "frequency": "WEEKLY",
-        "Created Date": "07-22-2025",
-        "Start Date": "07-16-2025",
-        "End Date": "07-22-2025",
-    },
-]
 
-requests.post("http://localhost:9090/webhook/alerts", json={"alerts": pattren})
+curr_path = Path(__file__).parent
+input_file = curr_path / "input.csv"
+
+batch_size = 100
+
+with open(input_file, newline="") as f:
+    r = csv.DictReader(f)
+
+    while True:
+        batch = list(itertools.islice(r, batch_size))
+        if not batch:
+            break
+        res = requests.post(
+            "http://localhost:9090/webhook/alerts", json={"alerts": batch}
+        )
+        print(res.json(), res.status_code)
